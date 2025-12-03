@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Studio Albany — Sistema Profissional</title>
+
+<!-- Manifest PWA -->
+<link rel="manifest" href="manifest.json">
+
+<style>
+:root{
+    --bg:#f4f4f6;
+    --card:#ffffff;
+    --text:#222;
+    --accent:#b7924b;
+    --accent-dark:#8c6d32;
+    --muted:#ccc;
+    --success:#2e7d32;
+    --warning:#ef6c00;
+    --danger:#c62828;
+    --radius:14px;
+    --shadow:0 8px 24px rgba(0,0,0,0.08);
+}
+[data-theme="dark"]{
+    --bg:#0f0f12;
+    --card:#161617;
+    --text:#f2f2f2;
+    --muted:#444;
+    --accent:#c7a96a;
+    --accent-dark:#8c6d32;
+}
+body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Inter, Arial, sans-serif;
+    transition:0.3s ease;
+}
+.app{
+    max-width:1400px;
+    margin:20px auto;
+    display:grid;
+    grid-template-columns:270px 1fr;
+    gap:20px;
+    padding:10px;
+}
+.sidebar{
+    background:var(--card);
+    padding:20px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 60px);
+    position:sticky;
+    top:20px;
+}
+.brand{
+    text-align:center;
+    font-size:22px;
+    font-weight:800;
+    color:var(--accent);
+    letter-spacing:1px;
+    margin-bottom:20px;
+}
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+.menu button{
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    background:var(--accent);
+    color:#fff;
+    transition:0.2s;
+}
+.menu button:hover{
+    background:var(--accent-dark);
+}
+.theme-btn{
+    margin-top:auto;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid var(--muted);
+    background:transparent;
+    cursor:pointer;
+    color:var(--text);
+    transition:0.2s;
+}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+.content{padding:10px;}
+.card{
+    background:var(--card);
+    padding:22px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+}
+h2,h3{margin:0 0 15px 0;font-weight:700}
+label{font-size:14px;margin-top:12px;display:block;color:var(--text)}
+input, select, textarea{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border-radius:10px;
+    border:1px solid var(--muted);
+    background:transparent;
+    color:var(--text);
+}
+.row{display:flex;gap:10px;align-items:center;margin-top:12px}
+.btn{
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    background:var(--accent);
+    color:#fff;
+}
+.btn.ghost{
+    background:transparent;
+    border:1px solid var(--muted);
+    color:var(--text);
+}
+.btn.danger{
+    background:var(--danger);
+    color:#fff;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:16px;
+}
+th,td{
+    padding:12px;
+    border-bottom:1px solid var(--muted);
+    font-size:14px;
+}
+th{font-weight:700;color:var(--accent-dark)}
+.status-pill{
+    padding:6px 14px;
+    border-radius:50px;
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+}
+.st-confirmado{background:var(--success)}
+.st-cancelado{background:var(--danger)}
+.st-remarcado{background:var(--warning)}
+@media(max-width:980px){
+    .app{grid-template-columns:1fr}
+    .sidebar{position:relative;height:auto}
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="app">
+<aside class="sidebar">
+<div class="brand">Albany Fotografias</div>
+<div class="menu">
+<button onclick="nav('home')">Página Inicial</button>
+<button onclick="nav('agenda')">Agendamentos</button>
+<button onclick="nav('vendas')">Vendas</button>
+<button onclick="nav('dashboard')">Dashboard</button>
+</div>
+<button class="theme-btn" onclick="toggleTheme()">Alternar Tema</button>
+</aside>
+<main class="content" id="content"></main>
+</div>
+
+<script>
+/* ----------------- STORAGE ----------------- */
+function load(key){ try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return[]} }
+function save(key,val){ localStorage.setItem(key, JSON.stringify(val)) }
+let AG = load('albany_agenda');
+let VD = load('albany_vendas');
+
+/* ----------------- NAV ----------------- */
+function nav(p){ 
+  if(p==='home') renderHome();
+  if(p==='agenda') renderAgenda();
+  if(p==='vendas') renderVendas();
+  if(p==='dashboard') renderDash();
+}
+function toggleTheme(){
+  const t = document.body.getAttribute('data-theme');
+  document.body.setAttribute('data-theme', t==='light'?'dark':'light');
+}
+
+/* ----------------- HOME ----------------- */
+function renderHome(){
+  content.innerHTML = `<div class='card'>
+    <h2>Bem-vinda, Albany!</h2>
+    <p>Gerencie seus agendamentos, vendas e relatórios de forma simples e bonita.</p>
+  </div>`;
+}
+
+/* ----------------- AGENDA ----------------- */
+function renderAgenda(){
+  content.innerHTML = `<div class='card'>
+    <h3>📅 Novo Agendamento</h3>
+    <label>Nome da Cliente</label><input id='ag_nome'>
+    <label>Data</label><input type='date' id='ag_data'>
+    <label>Horário</label><input type='time' id='ag_hora'>
+    <label>Status</label>
+    <select id='ag_status'>
+      <option value='confirmado'>Confirmado</option>
+      <option value='cancelado'>Cancelado</option>
+      <option value='remarcado'>Remarcado</option>
+    </select>
+    <div class='row'>
+      <button class='btn' onclick='saveAgenda()'>Salvar</button>
+      <button class='btn ghost' onclick='renderAgenda()'>Limpar</button>
+    </div>
+  </div>
+  <div class='card'>
+    <h3>📌 Agendamentos do Dia</h3>
+    <input type='date' id='ag_filter' onchange='showAgendaList()'>
+    <div id='ag_list' style='margin-top:15px'>Selecione uma data</div>
+  </div>`;
+}
+function saveAgenda(){
+  const n = ag_nome.value.trim();
+  const d = ag_data.value;
+  const h = ag_hora.value;
+  const s = ag_status.value;
+  if(!n || !d || !h){ alert('Preencha todos os campos'); return; }
+  AG.push({id:Date.now(), nome:n, data:d, hora:h, status:s});
+  save('albany_agenda', AG);
+  alert('Agendamento salvo');
+  showAgendaList();
+}
+function showAgendaList(){
+  const d = ag_filter.value;
+  if(!d){ ag_list.innerHTML=''; return; }
+  const list = AG.filter(x=>x.data===d).sort((a,b)=>a.hora.localeCompare(b.hora));
+  if(!list.length){ ag_list.innerHTML='<p>Nenhum agendamento.</p>'; return; }
+  let html='';
+  list.forEach(a=>{
+    const c = a.status==='confirmado'?'success':a.status==='cancelado'?'danger':'warning';
+    html += `<div style='border-left:6px solid var(--${c});padding:12px;border-radius:10px;margin-bottom:10px;background:var(--card)'>
+      <div style='display:flex;justify-content:space-between;align-items:center'>
+        <div>
+          <strong>${a.hora}</strong> — ${a.nome}<br>
+          <span class='status-pill st-${a.status}'>${a.status}</span>
+        </div>
+        <button class='btn danger' onclick='delAgenda(${a.id})'>Excluir</button>
+      </div>
+    </div>`
+  });
+  ag_list.innerHTML = html;
+}
+function delAgenda(id){
+  if(confirm('Excluir agendamento?')){
+    AG = AG.filter(x=>x.id!==id);
+    save('albany_agenda', AG);
+    showAgendaList();
+  }
+}
+
+/* ----------------- VENDAS ----------------- */
+function renderVendas(){
+  content.innerHTML = `<div class='card'>
+    <h3>💰 Registrar Venda</h3>
+    <label>Cliente</label><input id='v_nome'>
+    <label>Pacote</label>
+    <select id='v_pac'>
+      <option value='p1'>Pacote 1 - R$70</option>
+      <option value='p2'>Pacote 2 - R$100</option>
+      <option value='cortesia'>Cortesia</option>
+    </select>
+    <label>Extras (qtd)</label><input type='number' id='v_ext' value='0'>
+    <label>Forma de Pagamento</label>
+    <select id='v_pag'>
+      <option value='pix'>PIX</option>
+      <option value='dinheiro'>Dinheiro</option>
+      <option value='credito'>Crédito</option>
+      <option value='debito'>Débito</option>
+    </select>
+    <div class='row'>
+      <button class='btn' onclick='saveVenda()'>Salvar</button>
+      <button class='btn ghost' onclick='renderVendasPDF()'>Baixar PDF</button>
+    </div>
+  </div>
+  <div class='card'>
+    <h3>📄 Histórico de Vendas</h3>
+    <div id='v_list'></div>
+  </div>`;
+  showVendas();
+}
+function calcTotal(p,e){ if(p==='p1')return 70+e*10; if(p==='p2')return 100+e*15; return 0 }
+function saveVenda(){
+  const n = v_nome.value.trim();
+  const p = v_pac.value;
+  const e = Number(v_ext.value||0);
+  const g = v_pag.value;
+  if(!n){ alert('Informe o nome'); return; }
+  VD.push({id:Date.now(),nome:n,pacote:p,extras:e,pag:g,total:calcTotal(p,e),data:new Date().toISOString()});
+  save('albany_vendas', VD);
+  showVendas();
+}
+function showVendas(){
+  if(!VD.length){ v_list.innerHTML='<p>Nenhuma venda registrada.</p>'; return; }
+  let html = `<table><thead><tr>
+    <th>Data</th><th>Cliente</th><th>Pacote</th><th>Extras</th><th>Pagamento</th><th>Total</th><th>Ações</th>
+  </tr></thead><tbody>`;
+  VD.slice().reverse().forEach(v=>{
+    html += `<tr>
+      <td>${new Date(v.data).toLocaleString()}</td>
+      <td>${v.nome}</td>
+      <td>${v.pacote}</td>
+      <td>${v.extras}</td>
+      <td>${v.pag}</td>
+      <td>R$ ${v.total.toFixed(2)}</td>
+      <td><button class='btn danger' onclick='delVenda(${v.id})'>Excluir</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  v_list.innerHTML = html;
+}
+function delVenda(id){
+  if(confirm('Excluir venda?')){
+    VD = VD.filter(x=>x.id!==id);
+    save('albany_vendas', VD);
+    showVendas();
+  }
+}
+/* ----------------- PDF ----------------- */
+function renderVendasPDF(){
+  if(!VD.length){ alert('Nenhuma venda para exportar'); return; }
+  let doc = '';
+  VD.forEach(v=>{
+    doc += `Data: ${new Date(v.data).toLocaleString()}\nCliente: ${v.nome}\nPacote: ${v.pacote}\nExtras: ${v.extras}\nPagamento: ${v.pag}\nTotal: R$ ${v.total.toFixed(2)}\n\n`;
+  });
+  const blob = new Blob([doc], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vendas.txt';
+  a.click();
+}
+
+/* ----------------- DASHBOARD ----------------- */
+function renderDash(){
+  const total = VD.reduce((s,x)=>s + x.total, 0);
+  const qtd = VD.length;
+  content.innerHTML = `<div class='card'>
+    <h3>📊 Dashboard</h3>
+    <p><strong>Total faturado:</strong> R$ ${total.toFixed(2)}</p>
+    <p><strong>Vendas registradas:</strong> ${qtd}</p>
+  </div>`;
+}
+
+/* INIT */
+renderHome();
+
+/* ----------------- PWA SERVICE WORKER ----------------- */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(()=>console.log('SW registrado'));
+}
+</script>
+</body>
+</html>
